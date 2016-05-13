@@ -207,6 +207,19 @@ namespace Kentor.AuthServices.Configuration
             }
         }
 
+        readonly ICollection<AssertionConsumerService> assertionConsumerServices = new List<AssertionConsumerService>();
+
+        /// <summary>
+        /// Collection of attribute consuming services for the service provider.
+        /// </summary>
+        public ICollection<AssertionConsumerService> AssertionConsumerServices
+        {
+            get
+            {
+                return assertionConsumerServices;
+            }
+        }
+
         readonly ICollection<AttributeConsumingService> attributeConsumingServices = new List<AttributeConsumingService>();
 
         /// <summary>

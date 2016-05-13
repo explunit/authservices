@@ -145,5 +145,64 @@ namespace Kentor.AuthServices.Tests.Configuration
 
             subject.AttributeConsumingServices.First().Should().BeSameAs(attributeConsumingService);
         }
+
+        [TestMethod]
+        public void SPOPtionsExtensions_CreateMetadata_ACS()
+        {
+            var options = StubFactory.CreateSPOptions();
+
+            var customUrl1 = "https://somesite1/somepath";
+            var customUrl2 = "https://somesite2/somepath";
+            options.AssertionConsumerServices.Add(new AssertionConsumerService(new Uri(customUrl1)));
+            options.AssertionConsumerServices.Add(new AssertionConsumerService(new Uri(customUrl2)) { Binding = Saml2Binding.HttpArtifactUri });
+
+            var metadata = options.CreateMetadata(StubFactory.CreateAuthServicesUrls());
+
+            var spMetadata = metadata.RoleDescriptors.OfType<ServiceProviderSingleSignOnDescriptor>().Single();
+            spMetadata.Should().NotBeNull();
+            spMetadata.AssertionConsumerServices.Count().Should().Be(2);
+
+            var acs = spMetadata.AssertionConsumerServices.First().Value;
+            acs.Index.Should().Be(0);
+            acs.IsDefault.Should().HaveValue();
+            acs.Binding.ToString().Should().Be("urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST");
+            acs.Location.ToString().Should().Be(customUrl1);
+
+            acs = spMetadata.AssertionConsumerServices.Skip(1).First().Value;
+            acs.Index.Should().Be(1);
+            acs.IsDefault.Should().Be(false);
+            acs.Binding.ToString().Should().Be(Saml2Binding.HttpArtifactUri.ToString());
+            acs.Location.ToString().Should().Be(customUrl2);
+        }
+
+        [TestMethod]
+        public void SPOPtionsExtensions_CreateMetadata_ACS_DefaultNotFirst()
+        {
+            var options = StubFactory.CreateSPOptions();
+
+            var customUrl1 = "https://somesite1/somepath";
+            var customUrl2 = "https://somesite2/somepath";
+            options.AssertionConsumerServices.Add(new AssertionConsumerService(new Uri(customUrl1)) {
+                IsDefault = false
+            });
+            options.AssertionConsumerServices.Add(new AssertionConsumerService(new Uri(customUrl2)) {
+                IsDefault = true
+            });
+
+            var metadata = options.CreateMetadata(StubFactory.CreateAuthServicesUrls());
+
+            var spMetadata = metadata.RoleDescriptors.OfType<ServiceProviderSingleSignOnDescriptor>().Single();
+            spMetadata.Should().NotBeNull();
+
+            var acs = spMetadata.AssertionConsumerServices.First().Value;
+            acs.Index.Should().Be(0);
+            acs.IsDefault.Should().Be(false);
+            acs.Location.ToString().Should().Be(customUrl1);
+
+            acs = spMetadata.AssertionConsumerServices.Skip(1).First().Value;
+            acs.Index.Should().Be(1);
+            acs.IsDefault.Should().Be(true);
+            acs.Location.ToString().Should().Be(customUrl2);
+        }
     }
 }

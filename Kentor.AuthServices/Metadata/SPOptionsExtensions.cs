@@ -41,21 +41,37 @@ namespace Kentor.AuthServices.Metadata
 
             spsso.ProtocolsSupported.Add(new Uri("urn:oasis:names:tc:SAML:2.0:protocol"));
 
-            spsso.AssertionConsumerServices.Add(0, new IndexedProtocolEndpoint()
+            if (spOptions.AssertionConsumerServices.Count > 0)
             {
-                Index = 0,
-                IsDefault = true,
-                Binding = Saml2Binding.HttpPostUri,
-                Location = urls.AssertionConsumerServiceUrl
-            });
-
-            spsso.AssertionConsumerServices.Add(1, new IndexedProtocolEndpoint()
+                var index = 0;
+                foreach (var acs in spOptions.AssertionConsumerServices)
+                {
+                    spsso.AssertionConsumerServices.Add(index, new IndexedProtocolEndpoint()
+                    {
+                        Index = index++,
+                        IsDefault = acs.IsDefault,
+                        Binding = acs.Binding,
+                        Location = acs.Uri
+                    });
+                }
+            }
+            else
             {
-                Index = 1,
-                IsDefault = false,
-                Binding = Saml2Binding.HttpArtifactUri,
-                Location = urls.AssertionConsumerServiceUrl
-            });
+                spsso.AssertionConsumerServices.Add(0, new IndexedProtocolEndpoint()
+                {
+                    Index = 0,
+                    IsDefault = true,
+                    Binding = Saml2Binding.HttpPostUri,
+                    Location = urls.AssertionConsumerServiceUrl
+                });
+                spsso.AssertionConsumerServices.Add(1, new IndexedProtocolEndpoint()
+                {
+                    Index = 1,
+                    IsDefault = false,
+                    Binding = Saml2Binding.HttpArtifactUri,
+                    Location = urls.AssertionConsumerServiceUrl
+                });
+            }
 
             foreach(var attributeService in spOptions.AttributeConsumingServices)
             {
