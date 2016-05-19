@@ -964,7 +964,7 @@ namespace Kentor.AuthServices.Tests.Owin
 
             var storedAuthnData = ExtractRequestState(options.DataProtector, context);
 
-            storedAuthnData.ReturnUrl.Should().Be("http://localhost/Home");
+            storedAuthnData.ReturnUrl.Should().Be("/Home");
         }
 
         [TestMethod]

@@ -94,7 +94,7 @@ namespace Kentor.AuthServices.WebSso
                 }
             }
 
-            Uri returnUrl = ExpandReturnUrl(returnPath, request, urls);
+            Uri returnUrl = GetReturnUrl(returnPath);
 
             return InitiateLoginToIdp(options, relayData, urls, idp, returnUrl);
         }
@@ -116,15 +116,12 @@ namespace Kentor.AuthServices.WebSso
             return commandResult;
         }
 
-        private static Uri ExpandReturnUrl(string returnPath, HttpRequestData request, AuthServicesUrls urls)
+        private static Uri GetReturnUrl(string returnPath)
         {
             Uri returnUrl = null;
             if (!string.IsNullOrEmpty(returnPath))
             {
-                var appRelativePath = request.Url.AbsolutePath.Substring(
-                    request.ApplicationUrl.AbsolutePath.Length).TrimStart('/');
-
-                returnUrl = new Uri(new Uri(urls.ApplicationUrl, appRelativePath), returnPath);
+                returnUrl = new Uri(returnPath, UriKind.RelativeOrAbsolute);
             }
 
             return returnUrl;
